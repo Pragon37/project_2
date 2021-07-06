@@ -8,8 +8,8 @@ print()
 print(url)
 print()
 
-bookRecord = []
 book = {}
+SELECTOR = {}
 
 page = requests.get(url)
 
@@ -21,139 +21,120 @@ else:
 
 soup = BeautifulSoup(content, 'html.parser')
 
-TITLESELECTOR = ('head > title')
-CATEGORYSELECTOR = ('#default > div > div > ul > li:nth-child(3) > a')
-UPCSELECTOR = ('#content_inner > article > table > tr:nth-child(1) > td')
-WITHTAXSELECTOR = ('#content_inner > article > table > tr:nth-child(4) > td')
-WITHOUTTAXSELECTOR = ('#content_inner > article > table > tr:nth-child(3) > '
-                      'td')
-STOCKSELECTOR = ('#content_inner > article > div.row >'
-                 'div.col-sm-6.product_main > p.instock.availability')
-RATINGSELECTOR = ('#content_inner > article > div.row >'
-                  'div.col-sm-6.product_main > p.star-rating.Three')
-IMAGEURLSELECTOR = ('#product_gallery > div > div > div > img')
+SELECTOR['title'] = ('head > title')
 
-DESCRIPTIONSELECTOR = ('head > meta:nth-child(4)')
+SELECTOR['category'] = ('#default > div > div > ul > li:nth-child(3) > a')
 
-# 0
-titleData = soup.select(TITLESELECTOR)
+SELECTOR['upc'] = ('#content_inner > article > table > tr:nth-child(1) > td')
 
-book['title'] = str(titleData[0].
-                    text.
-                    replace(" | Books to Scrape - Sandbox", "").
-                    strip())
+SELECTOR['incltax'] = ('#content_inner > article > table > tr:nth-child(4)'
+                       ' > td')
 
-bookRecord.append(book['title'])
+SELECTOR['excltax'] = ('#content_inner > article > table > tr:nth-child(3)'
+                       ' > td')
 
-print(book['title'])
-print()
+SELECTOR['stock'] = ('#content_inner > article > div.row >'
+                     'div.col-sm-6.product_main > p.instock.availability')
+
+SELECTOR['rating'] = ('#content_inner > article > div.row >'
+                      'div.col-sm-6.product_main > p.star-rating.Three')
+
+SELECTOR['url'] = ('')
+
+SELECTOR['img'] = ('#product_gallery > div > div > div > img')
+
+SELECTOR['description'] = ('head > meta:nth-child(4)')
 
 
-# 1
-categoryData = soup.select(CATEGORYSELECTOR)
-
-book['category'] = str(categoryData[0].
-                       text)
-
-bookRecord.append(book['category'])
-
-print(book['category'])
-print()
-
-# 2
-upcData = soup.select(UPCSELECTOR)
-
-book['upc'] = str(upcData[0].
-                  text)
-
-bookRecord.append(book['upc'])
-
-print(book['upc'])
-print()
-
-# 3
-WithTaxData = soup.select(WITHTAXSELECTOR)
-
-book['withTax'] = str(WithTaxData[0].
-                      text)
+def get_title(inpt):
+    """Return title string from a title selector"""
+    return str(inpt[0].
+               text.
+               replace(" | Books to Scrape - Sandbox", "").
+               strip())
 
 
-bookRecord.append(book['withTax'])
-
-print(book['withTax'])
-print()
-
-
-# 4
-WithoutTaxData = soup.select(WITHOUTTAXSELECTOR)
-
-book['withoutTax'] = str(WithoutTaxData[0].
-                         text)
+def get_category(inpt):
+    """Return category string from a category selector"""
+    return str(inpt[0].
+               text)
 
 
-bookRecord.append(book['withoutTax'])
+def get_upc(inpt):
+    """Return upc string from a upc` selector"""
+    return str(inpt[0].
+               text)
 
-print(book['withoutTax'])
-print()
 
-# 5
-stockData = soup.select(STOCKSELECTOR)
+def get_incltax(inpt):
+    """Return price string from a price including tax selector"""
+    return str(inpt[0].
+               text)
 
-book['stock'] = (stockData[0].
-                 text.
-                 strip().
-                 replace("In stock (", "").
-                 replace(" available)", ""))
 
-bookRecord.append(book['stock'])
+def get_excltax(inpt):
+    """Return price string from a price excluding selector"""
+    return str(inpt[0].
+               text)
 
-print(book['stock'])
-print()
 
-# 6
-ratingData = soup.select(RATINGSELECTOR)
+def get_stock(inpt):
+    """Return stock string from a stock selector"""
+    return (inpt[0].
+            text.
+            strip().
+            replace("In stock (", "").
+            replace(" available)", ""))
 
-book['rating'] = (ratingData[0]['class'][1])
 
-bookRecord.append(book['rating'])
+def get_rating(inpt):
+    """Return rating string from a rating selector"""
+    return (inpt[0]['class'][1])
 
-print(book['rating'])
-print()
 
-# 7
+def get_url(inpt):
+    """Return url string"""
+    return inpt
 
-book['url'] = url
 
-bookRecord.append(book['url'])
+def get_img(inpt):
+    """Return image url string from a image url selector"""
+    return ('http://books.toscrape.com' +
+            inpt[0]['src'].
+            replace("../..", ""))
 
-print(book['url'])
-print()
 
-# 8
-imageUrlData = soup.select(IMAGEURLSELECTOR)
+def get_description(inpt):
+    """Return description string from a description selector"""
+    return (inpt[0]['content'].
+            strip())
 
-book['imageUrl'] = ('http://books.toscrape.com' +
-                    imageUrlData[0]['src'].
-                    replace("../..", ""))
 
-bookRecord.append(book['imageUrl'])
+for key in SELECTOR:
+    if key != 'url':
+        data = soup.select(SELECTOR[key])
+    if key == 'title':
+        book[key] = get_title(data)
+    elif key == 'category':
+        book[key] = get_category(data)
+    elif key == 'upc':
+        book[key] = get_upc(data)
+    elif key == 'incltax':
+        book[key] = get_incltax(data)
+    elif key == 'excltax':
+        book[key] = get_excltax(data)
+    elif key == 'stock':
+        book[key] = get_stock(data)
+    elif key == 'rating':
+        book[key] = get_rating(data)
+    elif key == 'url':
+        book[key] = get_url(url)
+    elif key == 'img':
+        book[key] = get_img(data)
+    elif key == 'description':
+        book[key] = get_description(data)
 
-print(book['imageUrl'])
-print()
-
-# 9
-
-descriptionData = soup.select(DESCRIPTIONSELECTOR)
-
-book['description'] = (descriptionData[0]['content'].
-                       strip())
-
-bookRecord.append(book['description'])
-
-print(book['description'])
-print()
-
-csvHeader = ('title, '
+CSVHEADER = ('title, '
              'category, '
              'universal_product_code, '
              'price_including_tax, '
@@ -167,7 +148,7 @@ csvHeader = ('title, '
 record = ""
 
 with open('book.csv', 'w') as outf:
-    outf.write(csvHeader)
+    outf.write(CSVHEADER)
     for key in book:
         record += (book[key] + ',')
     record += '\n'
