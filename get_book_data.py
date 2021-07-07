@@ -47,7 +47,7 @@ SELECTOR['description'] = ('head > meta:nth-child(4)')
 
 
 def get_title(inpt):
-    """Return title string from a title selector"""
+    "Return title string from a title selector"
     return str(inpt[0].
                text.
                replace(" | Books to Scrape - Sandbox", "").
@@ -55,31 +55,31 @@ def get_title(inpt):
 
 
 def get_category(inpt):
-    """Return category string from a category selector"""
+    "Return category string from a category selector"
     return str(inpt[0].
                text)
 
 
 def get_upc(inpt):
-    """Return upc string from a upc` selector"""
+    "Return upc string from a upc` selector"
     return str(inpt[0].
                text)
 
 
 def get_incltax(inpt):
-    """Return price string from a price including tax selector"""
+    "Return price string from a price including tax selector"
     return str(inpt[0].
                text)
 
 
 def get_excltax(inpt):
-    """Return price string from a price excluding selector"""
+    "Return price string from a price excluding selector"
     return str(inpt[0].
                text)
 
 
 def get_stock(inpt):
-    """Return stock string from a stock selector"""
+    "Return stock string from a stock selector"
     return (inpt[0].
             text.
             strip().
@@ -88,51 +88,58 @@ def get_stock(inpt):
 
 
 def get_rating(inpt):
-    """Return rating string from a rating selector"""
+    "Return rating string from a rating selector"
     return (inpt[0]['class'][1])
 
 
 def get_url(inpt):
-    """Return url string"""
+    "Return url string"
     return inpt
 
 
 def get_img(inpt):
-    """Return image url string from a image url selector"""
+    "Return image url string from a image url selector"
     return ('http://books.toscrape.com' +
             inpt[0]['src'].
             replace("../..", ""))
 
 
 def get_description(inpt):
-    """Return description string from a description selector"""
+    "Return description string from a description selector"
     return (inpt[0]['content'].
             strip())
 
 
-for key in SELECTOR:
-    if key != 'url':
-        data = soup.select(SELECTOR[key])
-    if key == 'title':
-        book[key] = get_title(data)
-    elif key == 'category':
-        book[key] = get_category(data)
-    elif key == 'upc':
-        book[key] = get_upc(data)
-    elif key == 'incltax':
-        book[key] = get_incltax(data)
-    elif key == 'excltax':
-        book[key] = get_excltax(data)
-    elif key == 'stock':
-        book[key] = get_stock(data)
-    elif key == 'rating':
-        book[key] = get_rating(data)
-    elif key == 'url':
-        book[key] = get_url(url)
-    elif key == 'img':
-        book[key] = get_img(data)
-    elif key == 'description':
-        book[key] = get_description(data)
+def extract_book(fsoup, furl):
+    "extract book data from soup:fsoup of the page url:furl"
+    fbook = {}
+    for key in SELECTOR:
+        if key != 'url':
+            data = fsoup.select(SELECTOR[key])
+        if key == 'title':
+            fbook[key] = get_title(data)
+        elif key == 'category':
+            fbook[key] = get_category(data)
+        elif key == 'upc':
+            fbook[key] = get_upc(data)
+        elif key == 'incltax':
+            fbook[key] = get_incltax(data)
+        elif key == 'excltax':
+            fbook[key] = get_excltax(data)
+        elif key == 'stock':
+            fbook[key] = get_stock(data)
+        elif key == 'rating':
+            fbook[key] = get_rating(data)
+        elif key == 'url':
+            fbook[key] = get_url(furl)
+        elif key == 'img':
+            fbook[key] = get_img(data)
+        elif key == 'description':
+            fbook[key] = get_description(data)
+    return fbook
+
+
+book = extract_book(soup,url)
 
 CSVHEADER = ('title, '
              'category, '
