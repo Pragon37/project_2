@@ -1,3 +1,4 @@
+import csv
 import requests
 from bs4 import BeautifulSoup
 
@@ -37,7 +38,7 @@ SELECTOR['stock'] = ('#content_inner > article > div.row >'
                      'div.col-sm-6.product_main > p.instock.availability')
 
 SELECTOR['rating'] = ('#content_inner > article > div.row >'
-                      'div.col-sm-6.product_main > p.star-rating.Three')
+                      'div.col-sm-6.product_main > p:nth-child(4)')
 
 SELECTOR['url'] = ('')
 
@@ -141,22 +142,30 @@ def extract_book(fsoup, furl):
 
 book = extract_book(soup,url)
 
-CSVHEADER = ('title, '
-             'category, '
-             'universal_product_code, '
-             'price_including_tax, '
-             'price_excluding_tax, '
-             'number_available, '
-             'review_rating, '
-             'product_page_url, '
-             'image_url, '
-             'product_description\n')
+CSVHEADER = ['title',
+             'category',
+             'universal_product_code',
+             'price_including_tax',
+             'price_excluding_tax',
+             'number_available',
+             'review_rating',
+             'product_page_url',
+             'image_url',
+             'product_description']
 
-record = ""
-
+record = []
+"""
 with open('book.csv', 'w') as outf:
     outf.write(CSVHEADER)
     for key in book:
-        record += (book[key] + ',')
+        record += ((book[key]) + ',')
     record += '\n'
     outf.write(record)
+"""
+
+for key in book:
+    record.append(book[key], )
+
+csvWriter = csv.writer(open('book.csv', 'w', newline=''))
+csvWriter.writerow(CSVHEADER)
+csvWriter.writerow(record)
