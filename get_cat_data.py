@@ -2,12 +2,13 @@
 Find out the different bokk categories and will collect book data
 for one one these category possibly spanning through several web pages
 """
+import re
 import csv
 import requests
 from bs4 import BeautifulSoup
 
 SITEURL = 'http://books.toscrape.com/'
-url = SITEURL + 'catalogue/a-light-in-the-attic_1000/index.html'
+print(SITEURL)
 
 CSVHEADER = ['title',
              'category',
@@ -20,9 +21,6 @@ CSVHEADER = ['title',
              'image_url',
              'product_description']
 
-print()
-print(url)
-print()
 
 book = {}
 SELECTOR = {}
@@ -43,8 +41,10 @@ allCategories = []
 
 
 def get_category_url(inpt):
-    "Return category url string from a category selector"
-    "and category from a category selector"
+    """
+    Return category url string from a category selector
+    and category from a category selector
+    """
     return [str(inpt[0]['href']), str(inpt[0].text).strip()]
 
 
@@ -75,6 +75,16 @@ SELECTOR['url'] = ('')
 SELECTOR['img'] = ('#product_gallery > div > div > div > img')
 
 SELECTOR['description'] = ('head > meta:nth-child(4)')
+
+
+def download(img_url, file_name):
+    "download url to file_name"
+    # open in binary mode
+    with open(file_name, "wb") as file:
+        # get request
+        response = requests.get(img_url)
+        # write to file
+        file.write(response.content)
 
 
 def get_bk_title(inpt):
@@ -120,7 +130,7 @@ def get_bk_stock(inpt):
 
 def get_bk_rating(inpt):
     "Return rating string from a rating selector"
-    return (inpt[0]['class'][1])
+    return inpt[0]['class'][1]
 
 
 def get_bk_url(inpt):
@@ -141,66 +151,12 @@ def get_bk_description(inpt):
             strip())
 
 
-"""
 def extract_book(fsoup, furl):
+    """
     "extract book data from soup:fsoup of the page url:furl"
-    fbook = {}
-    for key in SELECTOR:
-        if key != 'url':
-            data = fsoup.select(SELECTOR[key])
-        if key == 'title':
-            fbook[key] = get_bk_title(data)
-        elif key == 'category':
-            fbook[key] = get_bk_category(data)
-        elif key == 'upc':
-            fbook[key] = get_bk_upc(data)
-        elif key == 'incltax':
-            fbook[key] = get_bk_incltax(data)
-        elif key == 'excltax':
-            fbook[key] = get_bk_excltax(data)
-        elif key == 'stock':
-            fbook[key] = get_bk_stock(data)
-        elif key == 'rating':
-            fbook[key] = get_bk_rating(data)
-        elif key == 'url':
-            fbook[key] = get_bk_url(furl)
-        elif key == 'img':
-            fbook[key] = get_bk_img(data)
-        elif key == 'description':
-            fbook[key] = get_bk_description(data)
-    return fbook
-"""
-
-
-"""
-def extract_book(fsoup, furl):
-    "extract book data from soup:fsoup of the page url:furl"
-    fbook = {}
-    data = fsoup.select(SELECTOR['title'])
-    fbook['title'] = get_bk_title(data)
-    data = fsoup.select(SELECTOR['category'])
-    fbook['category'] = get_bk_category(data)
-    data = fsoup.select(SELECTOR['upc'])
-    fbook['upc'] = get_bk_upc(data)
-    data = fsoup.select(SELECTOR['incltax'])
-    fbook['incltax'] = get_bk_incltax(data)
-    data = fsoup.select(SELECTOR['excltax'])
-    fbook['excltax'] = get_bk_excltax(data)
-    data = fsoup.select(SELECTOR['stock'])
-    fbook['stock'] = get_bk_stock(data)
-    data = fsoup.select(SELECTOR['rating'])
-    fbook['rating'] = get_bk_rating(data)
-    fbook['url'] = get_bk_url(furl)
-    data = fsoup.select(SELECTOR['img'])
-    fbook['img'] = get_bk_img(data)
-    data = fsoup.select(SELECTOR['description'])
-    fbook['description'] = get_bk_description(data)
-    return fbook
-"""
-
-
-def extract_book(fsoup, furl):
-    "extract book data from soup:fsoup of the page url:furl"
+    using the CSS selector to find the data. Then it filters the
+    found data to provide the reuested information.
+    """
     fbook = []
     data = fsoup.select(SELECTOR['title'])
     fbook.append(get_bk_title(data),)
@@ -224,91 +180,92 @@ def extract_book(fsoup, furl):
     return fbook
 
 
-def get_book_url(pageContent):
-    "Find all the book urls in pageContent"
-    urlList = []
-    pageSoup = BeautifulSoup(pageContent, 'html.parser')
-    i = 1
+def get_book_url(pagecontent):
+    """
+    Find all the book urls in pagecontent
+    Return acts as a break and terminates the loop
+    """
+    urllist = []
+    pagesoup = BeautifulSoup(pagecontent, 'html.parser')
+    j = 1
     while True:
-        bookUrlSelector = ('#default > div > div > div > div > section >'
+        bookurlselector = ('#default > div > div > div > div > section >'
                            ' div:nth-child(2) > ol > li:nth-child(0) > article'
-                           ' > h3 > a').replace("0", str(i))
-        bookUrl = pageSoup.select(bookUrlSelector)
-        if bookUrl != []:
-            i = i + 1
-            print(str(bookUrl[0]['href']))
-            urlList.append(str(bookUrl[0]['href']))
+                           ' > h3 > a').replace("0", str(j))
+        bookurl = pagesoup.select(bookurlselector)
+        if bookurl != []:
+            j = j + 1
+            # print(str(bookurl[0]['href']))
+            urllist.append(str(bookurl[0]['href']))
         else:
-            print(i-1)
-            return urlList
-            break
+            print(str(j-1), "books on this page")
+            return urllist
 
-"""
-List all categories.Not used so far. Will be when iterating through the whole
-site
-for i in range(1, 51):
-    categorySelector = CATEGORYSELECTOR.replace("0", str(i))
-    catData = soup.select(categorySelector)
-    allCategories.append((get_category_url(catData)))
-    print(allCategories[i-1])
-"""
-"""
-page = requests.get(SITEURL)
 
-if page.status_code != 200:
-    print("Error fetching page")
-    exit()
-else:
-    content = page.content
+def get_book_list(catbaseurl):
+    """
+    Iterates through all pages of a category
+    and returns all the book found.
+    Return acts as a break and terminates the loop
+    """
+    k = 1
+    booklist = []
+    pagehtml = "/index.html"
+    while True:
+        page1 = requests.get(catbaseurl + pagehtml)
+        if page1.status_code == 200:
+            content1 = page1.content
+            booklist += get_book_url(content1)
+            k = k + 1
+            pagehtml = "/page-" + str(k) + ".html"
+        else:
+            print("category add-a-comment has: ", str(k-1), " pages")
+            return booklist
 
-soup = BeautifulSoup(content, 'html.parser')
-"""
+
+def format_book_data(book_list):
+    """
+    Using the list of book url the function get the book page
+    data and format the data to prepare it for csv writer
+    and download of the book images.
+    """
+    rows = []
+    for i in book_list:
+        url = ("https://books.toscrape.com/catalogue" +
+               i.replace("../../..", ""))
+        # print(url)
+        page = requests.get(url)
+
+        if page.status_code != 200:
+            print("Error fetching page")
+            exit()
+        else:
+            content = page.content
+
+        soup = BeautifulSoup(content, 'html.parser')
+        book = extract_book(soup, url)
+        rows.append(book)
+    return rows
+
 
 
 filename = 'fantasy.csv'
 CATBASEURL = "https://books.toscrape.com/catalogue/category/books/fantasy_19"
-
-
-def get_book_list(catBaseUrl):
-    i = 1
-    booklist = []
-    pageHtml = "/index.html"
-    while True:
-        page = requests.get(catBaseUrl + pageHtml)
-        if page.status_code != 200:
-            return booklist
-            print("category add-a-comment has: ", str(i-1), " pages")
-            break
-        else:
-            content = page.content
-            booklist += get_book_url(content)
-            i = i + 1
-            pageHtml = "/page-" + str(i) + ".html"
-
-
 bookList = get_book_list(CATBASEURL)
 
-rows = []
-
-for i in bookList:
-    record = []
-    url = "https://books.toscrape.com/catalogue" + i.replace("../../..", "")
-    print(url)
-    page = requests.get(url)
-
-    if page.status_code != 200:
-        print("Error fetching page")
-        exit()
-    else:
-        content = page.content
-
-    soup = BeautifulSoup(content, 'html.parser')
-    book = extract_book(soup, url)
-#    for key in book:
-#        record.append(book[key], )
-#    rows.append(record)
-    rows.append(book)
+categoryRows = format_book_data(bookList)
 
 recordWriter = csv.writer(open(filename, 'w', newline=''))
 recordWriter.writerow(CSVHEADER)
-recordWriter.writerows(rows)
+recordWriter.writerows(categoryRows)
+
+print("End of csv writing.Starts downloading images")
+
+for item in categoryRows:
+    name = re.sub('\(.*$', '', item[0])
+    name = re.sub('[:,&\']', '', name)
+    name = re.sub(' ', '_', name)
+    name = re.sub('_$', '', name)
+    filename = "book_img/" + name + ".jpg"
+    imgurl = item[8]
+    download(imgurl, filename)
