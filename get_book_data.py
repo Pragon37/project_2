@@ -1,3 +1,7 @@
+"""
+Read and parse a book html page. Extract the requested data and print them
+in file book.csv
+"""
 import csv
 import requests
 from bs4 import BeautifulSoup
@@ -166,6 +170,6 @@ with open('book.csv', 'w') as outf:
 for key in book:
     record.append(book[key], )
 
-csvWriter = csv.writer(open('book.csv', 'w', newline=''))
+csvWriter = csv.writer(open('book.csv', 'w', newline='', encoding='utf-8'))
 csvWriter.writerow(CSVHEADER)
 csvWriter.writerow(record)

@@ -1,7 +1,7 @@
 """
-Find out the different bokk categories and collect book data
-for one one these category possibly spanning through several web pages
-print the  data in category.csv file and download the cover page picture.
+Find out the different book categories and collect book data
+for all categories. For each category create a csv file that holds the data
+and download the book cover picture.
 """
 import re
 import csv
@@ -40,18 +40,8 @@ soup = BeautifulSoup(content, 'html.parser')
 
 allCategories = []
 
-
-def get_category_url(inpt):
-    """
-    Return category url string from a category selector
-    and category from a category selector
-    """
-    return [str(inpt[0]['href']), str(inpt[0].text).strip()]
-
-
 CATEGORYSELECTOR = ('#default > div > div > div > aside > div.side_categories '
                     '> ul > li > ul > li:nth-child(0) > a')
-
 
 SELECTOR['title'] = ('head > title')
 
@@ -84,8 +74,19 @@ def download(img_url, file_name):
     with open(file_name, "wb") as file:
         # get request
         response = requests.get(img_url)
-        # write to file
-        file.write(response.content)
+        if response.status_code != 200:
+            print("Error fetching page: ", img_url)
+        else:
+            # write to file
+            file.write(response.content)
+
+
+def get_category_url(inpt):
+    """
+    Return category url string from a category selector
+    and category from a category selector
+    """
+    return [str(inpt[0]['href']), str(inpt[0].text).strip()]
 
 
 def get_bk_title(inpt):
@@ -203,7 +204,7 @@ def get_book_url(pagecontent):
             return urllist
 
 
-def get_book_list(catbaseurl):
+def get_book_list(catbaseurl, cat):
     """
     Iterates through all pages of a category
     and returns all the book found.
@@ -220,7 +221,7 @@ def get_book_list(catbaseurl):
             k = k + 1
             pagehtml = "/page-" + str(k) + ".html"
         else:
-            print("category add-a-comment has: ", str(k-1), " pages")
+            print("category ", cat, "has: ", str(k-1), " pages")
             return booklist
 
 
@@ -231,40 +232,56 @@ def format_book_data(book_list):
     and download of the book images.
     """
     rows = []
-    for i in book_list:
+    for a_book in book_list:
         url = ("https://books.toscrape.com/catalogue" +
-               i.replace("../../..", ""))
+               a_book.replace("../../..", ""))
         # print(url)
-        page = requests.get(url)
+        page2 = requests.get(url)
 
         if page.status_code != 200:
             print("Error fetching page")
             exit()
         else:
-            content = page.content
+            content2 = page2.content
 
-        soup = BeautifulSoup(content, 'html.parser')
-        book = extract_book(soup, url)
-        rows.append(book)
+        soup2 = BeautifulSoup(content2, 'html.parser')
+        book2 = extract_book(soup2, url)
+        rows.append(book2)
     return rows
 
 
-filename = 'fantasy.csv'
-CATBASEURL = "https://books.toscrape.com/catalogue/category/books/fantasy_19"
-bookList = get_book_list(CATBASEURL)
+page = requests.get(SITEURL)
+if page.status_code != 200:
+    print("Error fetching page")
+    exit()
+else:
+    content = page.content
+soup = BeautifulSoup(content, 'html.parser')
+for i in range(1, 51):
+    categorySelector = CATEGORYSELECTOR.replace("0", str(i))
+    catData = soup.select(categorySelector)
+    allCategories.append(get_category_url(catData))
+    catBaseUrl = (SITEURL + get_category_url(catData)[0].replace("/index.html",
+                                                                 ""))
+    filename = get_category_url(catData)[1].replace(" ", "_") + ".csv"
+    print(filename, "      ", catBaseUrl)
 
-categoryRows = format_book_data(bookList)
+    bookList = get_book_list(catBaseUrl, get_category_url(catData)[1])
 
-recordWriter = csv.writer(open(filename, 'w', newline='', encoding='utf-8'))
-recordWriter.writerow(CSVHEADER)
-recordWriter.writerows(categoryRows)
+    categoryRows = format_book_data(bookList)
 
-print("End of csv writing.Starts downloading images")
+    recordWriter = csv.writer(open(filename, 'w', newline='',
+                                   encoding='utf-8'))
+    recordWriter.writerow(CSVHEADER)
+    recordWriter.writerows(categoryRows)
 
-for item in categoryRows:
-    name = re.sub(' ', '_', item[0])
-    name = re.sub('[^a-zA-Z0-9_]', '', name)
-    name = re.sub('_$', '', name)
-    filename = "book_img/" + name + ".jpg"
-    imgurl = item[8]
-    download(imgurl, filename)
+    print("End of csv writing.Starts downloading images")
+
+    for item in categoryRows:
+        name = re.sub(' ', '_', item[0])
+        name = re.sub('[^a-zA-Z0-9_]', 'x', name)
+        name = re.sub('_$', 'x', name)
+        filename = "book_img/" + name + ".jpg"
+        imgurl = item[8]
+        print(imgurl, "   ", filename)
+        download(imgurl, filename)
