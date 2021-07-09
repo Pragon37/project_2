@@ -9,9 +9,7 @@ from bs4 import BeautifulSoup
 siteUrl = 'http://books.toscrape.com/'
 url = siteUrl + 'catalogue/a-light-in-the-attic_1000/index.html'
 
-print()
 print(url)
-print()
 
 book = {}
 SELECTOR = {}
