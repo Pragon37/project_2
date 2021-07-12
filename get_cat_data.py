@@ -220,7 +220,7 @@ def get_book_list(catbaseurl):
             k = k + 1
             pagehtml = "/page-" + str(k) + ".html"
         else:
-            print("category add-a-comment has: ", str(k-1), " pages")
+            print("category Fantasy has: ", str(k-1), " pages")
             return booklist
 
 
@@ -255,7 +255,9 @@ bookList = get_book_list(CATBASEURL)
 
 categoryRows = format_book_data(bookList)
 
-recordWriter = csv.writer(open(filename, 'w', newline='', encoding='utf-8'))
+print("Start of csv writing")
+
+recordWriter = csv.writer(open(filename, 'w', newline='', encoding='utf-8-sig'))
 recordWriter.writerow(CSVHEADER)
 recordWriter.writerows(categoryRows)
 

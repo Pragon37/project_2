@@ -271,7 +271,7 @@ for i in range(1, 51):
     categoryRows = format_book_data(bookList)
 
     recordWriter = csv.writer(open(filename, 'w', newline='',
-                                   encoding='utf-8'))
+                                   encoding='utf-8-sig'))
     recordWriter.writerow(CSVHEADER)
     recordWriter.writerows(categoryRows)
 
