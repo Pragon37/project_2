@@ -26,17 +26,6 @@ CSVHEADER = ['title',
 book = {}
 SELECTOR = {}
 
-"""
-page = requests.get(SITEURL)
-
-if page.status_code != 200:
-    print("Error fetching page")
-    exit()
-else:
-    content = page.content
-
-soup = BeautifulSoup(content, 'html.parser')
-"""
 
 allCategories = []
 
@@ -278,9 +267,15 @@ for i in range(1, 51):
     print("End of csv writing.Starts downloading images")
 
     for item in categoryRows:
-        name = re.sub(' ', '_', item[0])
-        name = re.sub('[^a-zA-Z0-9_]', 'x', name)
-        name = re.sub('_$', 'x', name)
+        name = re.sub('Batman:', 'Batman', item[0])
+        name = re.sub('. .Fear Street Relaunch', '_1', name)
+        name = re.sub(' \(.*\)', '', name)
+        name = re.sub('[?].*$', '', name)
+        name = re.sub(':.*$', '', name)
+        name = re.sub(' ', '_', name)
+        name = re.sub('[^a-zA-Z0-9_]', '', name)
+        name = re.sub('__', '_', name)
+        name = re.sub('_$', '', name)
         filename = "book_img/" + name + ".jpg"
         imgurl = item[8]
         print(imgurl, "   ", filename)

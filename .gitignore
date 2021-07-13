@@ -3,3 +3,4 @@
 *.zip
 env/
 book_img/
+site_scrape.log
